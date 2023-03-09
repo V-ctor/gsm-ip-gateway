@@ -4,6 +4,7 @@ install_dependencies_for_openwrt() {
   opkg install msmtp
   opkg install kmod-usb-serial kmod-usb-serial-wwan kmod-usb-serial-option usb-modeswitch asterisk-chan-dongle
   opkg install asterisk-func-base64 asterisk-app-system
+  opkg install asterisk-codec-opus
 }
 
 add_line() {
