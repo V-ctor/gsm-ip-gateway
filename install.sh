@@ -27,8 +27,16 @@ install_for_openwrt() {
   service asterisk restart
 }
 
+install_dependencies_for_deb() {
+  apt update
+  apt install asterisk
+  apt install usb-modeswitch asterisk-chan-dongle
+}
+
 install_for_deb() {
   echo "install for deb based OS"
+  install_dependencies_for_deb
+  install_configs
 }
 
 if [ "$(uname -n)" = "OpenWrt" ]; then
