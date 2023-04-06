@@ -25,12 +25,14 @@ install_configs() {
 
 install_dependencies() {
   apt update
-  apt install asterisk
+  apt install asterisk certbot
 }
 
 setup_ip_tables() {
   iptables -I INPUT -p udp -m udp --dport 5060 -j ACCEPT
   iptables -I OUTPUT -p udp -m udp --dport 5060 -j ACCEPT
+  iptables -I INPUT -p udp -m udp --dport 5061 -j ACCEPT
+  iptables -I OUTPUT -p udp -m udp --dport 5061 -j ACCEPT
   iptables -I INPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
   iptables -I OUTPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
 }
@@ -41,5 +43,12 @@ install_configs
 service asterisk restart
 setup_ip_tables
 ./save-iptables.sh
+
+certbot certonly --standalone --preferred-challenges http -d victor.sipme.com.au
+cp -L /etc/letsencrypt/live/victor.sipme.com.au/fullchain.pem /etc/asterisk/keys/server.crt
+cp -L /etc/letsencrypt/live/victor.sipme.com.au/privkey.pem /etc/asterisk/keys/server.key
+chown asterisk:asterisk /etc/asterisk/keys/server.crt
+chown asterisk:asterisk /etc/asterisk/keys/server.key
+
 echo "Installation complete"
 echo "Don't forget to setup fail2ban!"

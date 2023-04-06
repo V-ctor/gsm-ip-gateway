@@ -34,6 +34,9 @@ cd /tmp
 ./install_asterisk_standalone.sh
 ```
 
+To issue SSL certificate manually you should install certbot and do:  
+`certbot certonly --standalone -d hostname`
+
 Some hints:  
 `pjsip show endpoints`  
 `core show translation` - show transcode matrix  
