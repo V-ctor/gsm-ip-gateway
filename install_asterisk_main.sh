@@ -30,7 +30,7 @@ install_dependencies() {
 }
 
 setup_ip_tables() {
-  iptables -I INPUT -p udp -m udp --dport 5060 -j ACCEPT
+  iptables -I INPUT -p udp -m udp -s 192.168.30.0/24 --dport 5060 -j ACCEPT
   iptables -I OUTPUT -p udp -m udp --dport 5060 -j ACCEPT
   iptables -I INPUT -p udp -m udp --dport 5061 -j ACCEPT
   iptables -I OUTPUT -p udp -m udp --dport 5061 -j ACCEPT
