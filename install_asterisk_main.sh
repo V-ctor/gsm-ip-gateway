@@ -20,7 +20,8 @@ install_configs() {
   add_line "#include extensions_tokens.conf" /etc/asterisk/extensions.conf
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
   add_line_before "[global]" "#include modules_custom.conf" /etc/asterisk/modules.conf
-  cp pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf extensions_custom.conf modules_custom.conf /etc/asterisk/
+  cd server-main
+  cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf /etc/asterisk/
 }
 
 install_dependencies() {

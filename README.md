@@ -5,7 +5,7 @@ There are two parts:
 ##  Install main server
 From root gsm-ip-gateway do
 ```shell
-scp * root@IP:/tmp  
+scp install_asterisk_main.sh,server-main root@IP:/tmp  
 ssh root@IP
 ```
 Execute appropriate install script.
@@ -13,25 +13,27 @@ Execute appropriate install script.
 Let's say we have IP=192.168.10.100
 Then:
 ```shell
-scp -O * root@192.168.10.100:/tmp`  
+scp -O install_asterisk_main.sh,server-main root@192.168.10.100:/tmp`  
 ssh root@192.168.110.100`
-cd /tmp  
-./install_asterisk_modem.sh
+cd /tmp
+chmod +x install_asterisk_main.sh  
+./install_asterisk_main.sh
 ```
 
 ##  Install remote part (OpenWRT)
 
 ```shell
-scp -O * root@IP:/tmp  
+scp -O install_asterisk_client.sh,server-client root@IP:/tmp  
 ssh root@IP
 ```  
 Let's say we have IP=192.168.1.100
 Then:
 ```shell
-scp -O * root@192.168.1.100:/tmp`  
+scp -O install_asterisk_client.sh,server-client root@192.168.1.100:/tmp`  
 ssh root@192.168.1.100`
 cd /tmp  
-./install_asterisk_standalone.sh
+chmod +x install_asterisk_client.sh  
+./install_asterisk_client.sh
 ```
 
 To issue SSL certificate manually you should install certbot and do:  

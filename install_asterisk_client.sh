@@ -16,7 +16,8 @@ install_configs() {
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
   add_line "noload => chan_sip.so" /etc/asterisk/modules.conf
   add_line "load => chan_pjsip.so" /etc/asterisk/modules.conf
-  cp pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf extensions_custom.conf dongle.conf /etc/asterisk/
+  cd server-client
+  cp pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf pjsip_custom_cloud.conf extensions_custom.conf dongle.conf /etc/asterisk/
 }
 
 install_for_openwrt() {
