@@ -23,6 +23,8 @@ setup_ip_tables() {
   iptables -I OUTPUT -p udp -m udp --dport 5060 -j ACCEPT
   iptables -I INPUT -p udp -m udp --dport 5061 -j ACCEPT
   iptables -I OUTPUT -p udp -m udp --dport 5061 -j ACCEPT
+  iptables -I INPUT -p tcp -m tcp --dport 4569 -j ACCEPT
+  iptables -I OUTPUT -p tcp -m tcp --dport 4569 -j ACCEPT
   iptables -I INPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
   iptables -I OUTPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
 }
