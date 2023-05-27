@@ -18,9 +18,10 @@ add_line_before() {
 install_configs() {
   add_line "#include pjsip_custom.conf" /etc/asterisk/pjsip.conf
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
+  add_line "#include voicemail_custom.conf" /etc/asterisk/voicemail.conf
   add_line_before "[global]" "#include modules_custom.conf" /etc/asterisk/modules.conf
   cd server-main
-  cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf /etc/asterisk/
+  cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf voicemail_custom.conf /etc/asterisk/
 }
 
 preload_opus_lib() {
