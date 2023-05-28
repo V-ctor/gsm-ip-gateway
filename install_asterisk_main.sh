@@ -17,11 +17,34 @@ add_line_before() {
 
 install_configs() {
   add_line "#include pjsip_custom.conf" /etc/asterisk/pjsip.conf
-  add_line "#include extensions_tokens.conf" /etc/asterisk/extensions.conf
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
   add_line_before "[global]" "#include modules_custom.conf" /etc/asterisk/modules.conf
   cd server-main
   cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf /etc/asterisk/
+}
+
+preload_opus_lib() {
+  service_file="/lib/systemd/system/asterisk.service"
+  target_section="[Service]"
+  inserted_line="Environment=LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libopus.so.0"
+
+  # Check if the service file exists
+  if [[ ! -f "$service_file" ]]; then
+      echo "Service file not found: $service_file"
+      exit 1
+  fi
+
+  # Insert the new line after the target section
+  sed -i "/$target_section/a $inserted_line" "$service_file"
+
+  echo "Line inserted successfully."
+}
+
+install_opus() {
+  cd /home/ubuntu
+  wget http://ftp.debian.org/debian/pool/main/a/asterisk-opus/asterisk-opus_13.7+20171009-2_arm64.deb
+  dpkg -i /home/ubuntu/asterisk-opus_13.7+20171009-2_arm64.deb
+  preload_opus_lib
 }
 
 install_dependencies() {
@@ -40,6 +63,7 @@ setup_ip_tables() {
 
 echo "Installing standalone Asterisk server"
 install_dependencies
+install_opus
 install_configs
 service asterisk restart
 setup_ip_tables
