@@ -24,6 +24,7 @@ install_configs() {
   cd server-main
   cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf voicemail_custom.conf extensions_tokens.conf /etc/asterisk/
   cp send_last_voicemail_to_telegram.sh /usr/local/bin/
+  cp send_last_voicerecord_to_telegram.sh /usr/local/bin/
 }
 
 preload_opus_lib() {
