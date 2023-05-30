@@ -4,10 +4,10 @@ tokens_file=/etc/asterisk/extensions_tokens.conf
 BOT_ID=$(grep -Po '(?<=BOT_ID=).*' "$tokens_file")
 CHAT_ID=$(grep -Po '(?<=CHAT_ID=).*' "$tokens_file")
 
-voicrecrds_dir="/var/spool/asterisk/monitor/records"  # Replace with the desired voicemail directory and mailbox
-
 # Get the paths to the two latest voicemail files with .wav extension
-wav_file=$(ls -t "$voicrecrds_dir"/*.wav 2>/dev/null | head -n1)
+wav_file=$1
+date_time=$2
+caller_num=$3
 
 # Echo the paths of the two latest voicemail files
 echo "$wav_file"
@@ -16,7 +16,7 @@ opusenc "$wav_file" "$opus_file"
 
 result=$(curl -X POST -H "Content-Type:multipart/form-data"\
   -F document=@"$opus_file" "https://api.telegram.org/$BOT_ID/sendDocument?chat_id=$CHAT_ID"\
-  -F caption="voicerecord")
+  -F caption="Call from $caller_num at $date_time")
 
 tg_status=$(echo "$result" | grep -oP '"ok"\s*:\s*\K[^,}]+')
 
