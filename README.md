@@ -39,6 +39,13 @@ chmod +x install_asterisk_client.sh
 To issue SSL certificate manually you should install certbot and do:  
 `certbot certonly --standalone -d hostname`
 
+To be able to send voice records by telegram and email you have to fill [extensions_tokens.conf](server-main%2Fextensions_tokens.conf)
+And launch [install_asterisk_main_update_configs.sh](install_asterisk_main_update_configs.sh)
+
+It uses Mutt as email smtp client and it is tricky. If Mutt doesn't send emails and says nothing in logs then probably the matter is SSL certificate that must be accepted once and stored. Just try:  
+1. Fill /etc/Muttrc
+2. `sudo -u asterisk -s mutt -s 'message test' <email_to>`
+
 Some hints:  
 `pjsip show endpoints`  
 `core show translation` - show transcode matrix  

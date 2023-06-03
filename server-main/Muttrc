@@ -1,0 +1,17 @@
+set from =
+set realname = "IpTelephony: Asterisk"
+
+set ssl_verify_host = no
+set ssl_verify_dates = no
+# Where to put the stuff
+set header_cache = "/opt/mutt/cache/headers"
+set message_cachedir = "/opt/mutt/cache/bodies"
+set certificate_file = "/opt/mutt/certificates"
+
+# My credentials
+# For 2FA issue and application token from:
+# https://security.google.com/settings/security/apppasswords
+set smtp_url = "smtp://@smtp.gmail.com:587/"
+set smtp_pass =
+set ssl_force_tls=yes
+#set ssl_starttls=yes
