@@ -25,7 +25,6 @@ install_configs() {
   cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf voicemail_custom.conf extensions_tokens.conf /etc/asterisk/
   cp Muttrc /etc/
   cp send_last_voicemail.sh /usr/local/bin/
-  cp send_last_voicerecord.sh /usr/local/bin/
   install_asterisk_main_update_configs.sh
 }
 
