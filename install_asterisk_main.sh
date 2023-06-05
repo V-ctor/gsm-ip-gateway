@@ -54,7 +54,7 @@ install_opus() {
 
 install_dependencies() {
   apt update
-  apt install asterisk certbot mutt
+  apt install asterisk asterisk-core-sounds-ru asterisk-core-sounds-ru-gsm asterisk-core-sounds-ru-wav asterisk-core-sounds-ru-g722 certbot mutt -y
 }
 
 setup_ip_tables() {
