@@ -1,6 +1,6 @@
 install_dependencies_for_openwrt() {
   opkg update
-  opkg install asterisk asterisk-pjsip asterisk-bridge-simple asterisk-codec-alaw asterisk-res-rtp-asterisk
+  opkg install asterisk asterisk-pjsip asterisk-bridge-simple asterisk-codec-alaw asterisk-res-rtp-asterisk asterisk-app-stack
   opkg install kmod-usb-serial kmod-usb-serial-wwan kmod-usb-serial-option usb-modeswitch asterisk-chan-dongle
   opkg install asterisk-func-base64 asterisk-app-system
 }
