@@ -25,7 +25,14 @@ install_configs() {
   cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf voicemail_custom.conf extensions_tokens.conf /etc/asterisk/
   cp Muttrc /etc/
   cp send_last_voicemail.sh /usr/local/bin/
+  cp ussd_request_processing.sh /usr/local/bin/
   install_asterisk_main_update_configs.sh
+}
+
+update_cron() {
+  USSD_REQUEST_PROCESSING_SCRIPT=/usr/local/bin/ussd_request_processing.sh
+  CRON_CMD="*/1 * * * * $USSD_REQUEST_PROCESSING_SCRIPT >/dev/null 2>&1"
+  (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
 }
 
 preload_opus_lib() {
@@ -35,8 +42,8 @@ preload_opus_lib() {
 
   # Check if the service file exists
   if [[ ! -f "$service_file" ]]; then
-      echo "Service file not found: $service_file"
-      exit 1
+    echo "Service file not found: $service_file"
+    exit 1
   fi
 
   # Insert the new line after the target section
@@ -70,6 +77,7 @@ echo "Installing standalone Asterisk server"
 install_dependencies
 install_opus
 install_configs
+update_cron
 service asterisk restart
 setup_ip_tables
 ./save-iptables.sh
