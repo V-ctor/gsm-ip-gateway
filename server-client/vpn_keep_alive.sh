@@ -6,6 +6,17 @@ CHECK_SCRIPT="/usr/bin/vpn_checker.sh"
 cat << EOF > $CHECK_SCRIPT
 #!/bin/sh
 
+# Check if SoftEtherVPN client is providing IPv4 address
+if ! ifconfig vpn_se | grep -q "inet addr"; then
+    echo "VPN client is malfunctioning. Restarting..."
+
+    # Restart the VPN client
+    service softethervpnclient restart
+
+    echo "VPN client restarted."
+    exit
+fi
+
 # Check if the VPN client is active
 vpn_status=\$(service softethervpnclient status)
 
