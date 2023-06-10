@@ -4,13 +4,23 @@ add_line() {
   fi
 }
 
+# usage: add_line_after <before string> <string to be inserted> <file>
+add_line_before() {
+  awk -v insert="$2" -v before="$1" '{\
+    if ($0 == before) {\
+        print insert\
+    }\
+    print\
+  }' "$3" > temp_file
+  mv temp_file "$3"
+}
+
 install_configs() {
   add_line "#include pjsip_custom.conf" /etc/asterisk/pjsip.conf
   add_line "#include extensions_tokens.conf" /etc/asterisk/extensions.conf
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
-  add_line "noload => chan_sip.so" /etc/asterisk/modules.conf
-  add_line "load => chan_pjsip.so" /etc/asterisk/modules.conf
-  cp pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf extensions_custom.conf /etc/asterisk/
+  add_line_before "[global]" "#include modules_custom.conf" /etc/asterisk/modules.conf
+  cp pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf extensions_custom.conf modules_custom.conf /etc/asterisk/
 }
 
 install_dependencies() {
