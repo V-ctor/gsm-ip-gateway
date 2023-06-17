@@ -39,6 +39,9 @@ chmod +x install_asterisk_client.sh
 To issue SSL certificate manually you should install certbot and do:  
 `certbot certonly --standalone -d hostname`
 
+Just set some variables:
+ALLOWED_EXTEN - is phone number pattern like _+998X. for Uzbekistan
+
 To be able to send voice records by telegram and email you have to fill [extensions_tokens.conf](server-main%2Fextensions_tokens.conf)
 And launch [install_asterisk_main_update_configs.sh](install_asterisk_main_update_configs.sh)
 
