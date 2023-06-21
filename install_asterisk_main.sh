@@ -26,6 +26,7 @@ install_configs() {
   cp Muttrc /etc/
   cp send_last_voicemail.sh /usr/local/bin/
   cp ussd_request_processing.sh /usr/local/bin/
+  cp cert_renew_hook.sh /etc/letsencrypt/renewal-hooks/deploy
   install_asterisk_main_update_configs.sh
 }
 
@@ -73,6 +74,23 @@ setup_ip_tables() {
   iptables -I OUTPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
 }
 
+function setUpCertBot() {
+  apt-get update
+  apt-get install certbot
+
+  cp asterisk-renew-cert_hook.sh /etc/letsencrypt/renewal-hooks/post/
+
+  # Generate SSL certificate using Certbot
+  certbot certonly --standalone --preferred-challenges http -d "$1"
+  if [ $? -eq 0 ]; then
+      echo "Certificate renewal successful! Asterisk will be restarted soon."
+      /etc/letsencrypt/renewal-hooks/post/asterisk-renew-cert_hook.sh "$1"
+  else
+      echo "Certificate renewal failed!"
+      exit 1
+  fi
+}
+
 echo "Installing standalone Asterisk server"
 install_dependencies
 install_opus
@@ -82,11 +100,7 @@ service asterisk restart
 setup_ip_tables
 ./save-iptables.sh
 
-certbot certonly --standalone --preferred-challenges http -d victor.sipme.com.au
-cp -L /etc/letsencrypt/live/victor.sipme.com.au/fullchain.pem /etc/asterisk/keys/server.crt
-cp -L /etc/letsencrypt/live/victor.sipme.com.au/privkey.pem /etc/asterisk/keys/server.key
-chown asterisk:asterisk /etc/asterisk/keys/server.crt
-chown asterisk:asterisk /etc/asterisk/keys/server.key
+setUpCertBot "victor.sipme.com.au"
 
 echo "Installation complete"
 echo "Don't forget to setup fail2ban!"

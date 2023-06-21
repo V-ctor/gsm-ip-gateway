@@ -39,6 +39,8 @@ chmod +x install_asterisk_client.sh
 To issue SSL certificate manually you should install certbot and do:  
 `certbot certonly --standalone -d hostname`
 
+Install script adds cert bot renew hook script (asterisk-renew-cert_hook.sh) for updating certificates for asterisk 
+
 Just set some variables:
 ALLOWED_EXTEN - is phone number pattern like _+998X. for Uzbekistan
 
