@@ -1,3 +1,4 @@
+#!/bin/sh
 install_dependencies_for_openwrt() {
   opkg update
   opkg install asterisk asterisk-pjsip asterisk-bridge-simple asterisk-codec-alaw asterisk-res-rtp-asterisk asterisk-app-stack
@@ -16,8 +17,19 @@ install_configs() {
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
   add_line "noload => chan_sip.so" /etc/asterisk/modules.conf
   add_line "load => chan_pjsip.so" /etc/asterisk/modules.conf
-  cd server-client
-  cp pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf pjsip_custom_cloud.conf extensions_custom.conf dongle.conf /etc/asterisk/
+
+  source_files="pjsip_custom.conf pjsip_custom_100.conf pjsip_custom_101.conf pjsip_custom_cloud.conf extensions_custom.conf dongle.conf"
+  source_dir="server-client"
+  destination_dir="/etc/asterisk/"
+  for source_file in $source_files; do
+    # Check if the source file exists in the destination directory
+    if [ ! -e "$destination_dir/$source_file" ]; then
+      cp "$source_dir/$source_file" "$destination_dir"
+      echo "Copied $source_file to $destination_dir"
+    else
+      echo "$source_file already exists in $destination_dir, skipping."
+    fi
+  done
 }
 
 install_for_openwrt() {
