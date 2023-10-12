@@ -25,13 +25,35 @@ install_configs() {
   cp pjsip_custom.conf pjsip_custom_200.conf pjsip_custom_201.conf extensions_custom.conf modules_custom.conf voicemail_custom.conf extensions_tokens.conf /etc/asterisk/
   cp Muttrc /etc/
   cp send_last_voicemail.sh /usr/local/bin/
-  cp ussd_request_processing.sh /usr/local/bin/
   cp cert_renew_hook.sh /etc/letsencrypt/renewal-hooks/deploy
   install_asterisk_main_update_configs.sh
 }
 
-update_cron() {
-  USSD_REQUEST_PROCESSING_SCRIPT=/usr/local/bin/ussd_request_processing.sh
+install_telegram_bot() {
+  curl -s "https://get.sdkman.io" | bash     # install sdkman
+  source "$HOME/.sdkman/bin/sdkman-init.sh"  # add sdkman to PATH
+  sdk install kotlin
+  sdk install kscript
+  ln -s  ~/.sdkman/candidates/kotlin/current/bin/kotlin /usr/bin/kotlin
+  ln -s  ~/.sdkman/candidates/kscript/current/bin/kscript /usr/bin/kscript
+
+  #We have to put KSCRIPT_HOME and KOTLIN_HOME to crontab
+  env_vars=()
+  while IFS= read -r line; do
+      env_vars+=("$line")
+  done < <(env | grep 'HOME')
+
+  # Check if each environment variable exists in the current user's crontab and add it to the beginning if not
+  for var in "${env_vars[@]}"; do
+      if ! (crontab -l | grep -q "$var"); then
+          (echo "$var" ; crontab -l) | crontab -
+      fi
+  done
+
+
+  mkdir /usr/scripts
+  cp TelegramBot.main.kts /usr/scripts/
+  USSD_REQUEST_PROCESSING_SCRIPT=/usr/scripts/TelegramBot.main.kts
   CRON_CMD="*/1 * * * * $USSD_REQUEST_PROCESSING_SCRIPT >/dev/null 2>&1"
   (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
 }
