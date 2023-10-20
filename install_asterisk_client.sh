@@ -13,6 +13,8 @@ add_line() {
 }
 
 install_configs() {
+  sed -i "s/option enabled '0'/option enabled '1'/" "/etc/config/asterisk" #Enable asterisk
+
   add_line "#include pjsip_custom.conf" /etc/asterisk/pjsip.conf
   add_line "#include extensions_custom.conf" /etc/asterisk/extensions.conf
   add_line "noload => chan_sip.so" /etc/asterisk/modules.conf
