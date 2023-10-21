@@ -45,8 +45,8 @@ data class TelegramChat(
 val tokensFile = "/etc/asterisk/extensions_tokens.conf"
 val botId = parseConfigValue(tokensFile, "BOT_ID=")
 val chatId = parseConfigValue(tokensFile, "CHAT_ID=").toLong()
-val ussdPattern = "\\s*\\*102#"
-val notAllowedUssdMessage = "String does not match allowed USSD pattern. Allowed: *102# - get balance"
+val ussdPattern = "^\\d{1,2}:\\*10[02]#\$"
+val notAllowedUssdMessage = "String does not match allowed USSD pattern. Allowed: *100# or *102# - get balance"
 val notAllowedUssdMessageUrl = notAllowedUssdMessage.encodeToUri()
 
 val mapper = jacksonObjectMapper()
