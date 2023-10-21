@@ -60,7 +60,7 @@ install_for_deb() {
   install_configs
 }
 
-if [ "$(uname -n)" = "OpenWrt" ]; then
+if [ -f /etc/openwrt_release ]; then
   install_for_openwrt
 else
   install_for_deb
