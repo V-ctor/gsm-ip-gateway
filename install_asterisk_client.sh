@@ -1,4 +1,5 @@
 #!/bin/sh
+################ Install for OpenWRT
 install_dependencies_for_openwrt() {
   opkg update
   opkg install asterisk asterisk-pjsip asterisk-bridge-simple asterisk-codec-alaw asterisk-res-rtp-asterisk asterisk-app-stack
@@ -37,10 +38,15 @@ install_configs() {
 install_for_openwrt() {
   echo "Install Asterisk for OpenWRT"
   install_dependencies_for_openwrt
-  chmod 666 /dev/ttyUSB*
+  chmod 666 /dev/ttyUSB* #It could be necessary to make this changes for each dongle replug
+  cp server-client/90-usb-dongle-hotplug  /etc/hotplug.d/usb/
+  /etc/init.d/hotplug2 restart
+
   install_configs
   service asterisk restart
 }
+
+################ Install for deb-based distros
 
 install_dependencies_for_deb() {
   apt update

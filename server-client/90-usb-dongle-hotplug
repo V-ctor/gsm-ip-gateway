@@ -1,0 +1,4 @@
+if [ "$ACTION" = "add" ]; then
+   sleep 5
+   chown asterisk:asterisk /dev/ttyUSB*
+fi
