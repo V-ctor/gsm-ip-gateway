@@ -33,6 +33,8 @@ install_configs() {
       echo "$source_file already exists in $destination_dir, skipping."
     fi
   done
+
+  ./update_asterisk_server_address_interactive.sh
 }
 
 # The issue, if we have:
