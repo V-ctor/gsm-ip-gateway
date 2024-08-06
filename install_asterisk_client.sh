@@ -65,6 +65,8 @@ install_for_openwrt() {
 
   install_configs
   modify_chan_dongle_for_E171
+  ./dongle_keep_alive_install.sh
+  ./dongle_number_check_install.sh
   service asterisk restart
 }
 
