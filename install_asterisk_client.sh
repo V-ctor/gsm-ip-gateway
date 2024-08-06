@@ -56,16 +56,7 @@ allow_RTP() {
 # but 'asterisk-chan-dongle - 2021-10-06-3d046f7d-2' does not contain it. That is why we emulate it by this modifying.
 modify_chan_dongle_for_E171() {
   file_to_modify="/usr/lib/asterisk/modules/chan_dongle.so"
-  current_sha256=$(sha256sum "$file_to_modify" | awk '{print $1}')
-
-  # Check if the current hash matches the expected hash
-  if [ "$current_sha256" = "6626caa88d2c5b0799376961dc6809f1f4af510e67818dc740e56587d3d8a25e" ]; then
-      # Writing the value to the specific position in the file (198872 bytes from the beginning)
-      printf '\x01' | dd of="$file_to_modify" bs=1 seek=198872 conv=notrunc
-      echo "Value '0x01' written to $file_to_modify at position 198872."
-  else
-      echo "File $file_to_modify does not match the expected SHA256 hash. Looks it is not '2021-10-06-3d046f7d-2' version. Not modifying the file."
-  fi
+  sed 's/\xd1\x12\x06\x15\x03/\xd1\x12\x06\x15\x01/g' $file_to_modify.so > temp; rm $file_to_modify.so; mv temp $file_to_modify.so
 }
 
 install_for_openwrt() {
