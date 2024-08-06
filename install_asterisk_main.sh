@@ -87,13 +87,27 @@ install_dependencies() {
   apt install asterisk asterisk-core-sounds-ru asterisk-core-sounds-ru-gsm asterisk-core-sounds-ru-wav asterisk-core-sounds-ru-g722 certbot mutt -y
 }
 
-setup_ip_tables() {
-  iptables -I INPUT -p udp -m udp -s 192.168.30.0/24 --dport 5060 -j ACCEPT
-  iptables -I OUTPUT -p udp -m udp --dport 5060 -j ACCEPT
-  iptables -I INPUT -p udp -m udp --dport 5061 -j ACCEPT
-  iptables -I OUTPUT -p udp -m udp --dport 5061 -j ACCEPT
-  iptables -I INPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
-  iptables -I OUTPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
+#Now it supports firewalld only
+setup_firewall() {
+  if systemctl is-active --quiet firewalld; then
+    echo "firewalld is running."
+    firewall-cmd --permanent --add-service=sip
+    firewall-cmd --permanent --add-port=5061/tcp
+    firewall-cmd --permanent --add-port=10000-20000/udp
+    firewall-cmd --reload
+    return
+  elif systemctl is-active --quiet firewalld; then
+    iptables -I INPUT -p udp -m udp -s 192.168.30.0/24 --dport 5060 -j ACCEPT
+    iptables -I OUTPUT -p udp -m udp --dport 5060 -j ACCEPT
+    iptables -I INPUT -p udp -m udp --dport 5061 -j ACCEPT
+    iptables -I OUTPUT -p udp -m udp --dport 5061 -j ACCEPT
+    iptables -I INPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
+    iptables -I OUTPUT -p udp -m udp --dport 10000:30000 -j ACCEPT
+    return
+  else
+    echo "Unknown firewall manager (nft, ufw?)"
+  fi
+
 }
 
 function setUpCertBot() {
@@ -119,7 +133,7 @@ install_opus
 install_configs
 update_cron
 service asterisk restart
-setup_ip_tables
+setup_firewall
 ./save-iptables.sh
 
 setUpCertBot "victor.sipme.com.au"

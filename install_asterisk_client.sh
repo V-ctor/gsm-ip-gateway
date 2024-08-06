@@ -37,6 +37,16 @@ install_configs() {
   ./update_asterisk_server_address_interactive.sh
 }
 
+allow_RTP() {
+  uci add firewall rule
+  uci set firewall.@rule[-1].name='Allow-RTP'
+  uci set firewall.@rule[-1].src='VPN'
+  uci set firewall.@rule[-1].proto='udp'
+  uci set firewall.@rule[-1].dest_port='10000:20000'
+  uci set firewall.@rule[-1].target='ACCEPT'
+  uci commit firewall
+}
+
 # The issue, if we have:
 # 1. dongle E171 from MTS (AE171s-1), lsusb recognizes as
 #  12d1:1506        Mobile Connect
@@ -66,6 +76,7 @@ install_for_openwrt() {
   /etc/init.d/hotplug2 restart
 
   install_configs
+  allow_RTP
   modify_chan_dongle_for_E171
   ./dongle_keep_alive_install.sh
   ./dongle_number_check_install.sh
