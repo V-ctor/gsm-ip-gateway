@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 tokens_file=/etc/asterisk/extensions_tokens.conf
 BOT_ID=$(grep -Po '(?<=BOT_ID=).*' "$tokens_file")
 CHAT_ID=$(grep -Po '(?<=CHAT_ID=).*' "$tokens_file")
@@ -10,16 +10,17 @@ voicemail_dir="/var/spool/asterisk/voicemail/voice-mail/common/INBOX"  # Replace
 src_full_name=$1
 source=$2 #[email|monitor]
 wav_file=$src_full_name.wav
+exten=$4
+callee_number=$5
 if [[ "$source" = "email" ]]; then  #voice mail keeps all meta data in msgXXX.txt
   txt_file=$src_full_name.txt
   origtime=$(cat "$txt_file" | grep -oP '(?<=origtime=).*')
-  date_time=$(date -d "@$origtime" +'%Y%m%d-%H%M%S')
-  exten=$(cat "$txt_file" | grep -oP '(?<=exten=).*')
-  caption_postfix="(voice mail)"
+  date_time=$(date -d "@$origtime" +'%Y-%m-%d %H:%M:%S')
+  caption_postfix="mail"
 else    # but mix monitor does not
   date_time=$3
-  exten=$4
-  caption_postfix="(monitor record)"
+  date_time=${date_time/_/ }
+  caption_postfix="monitor"
 fi
 opus_file=${src_full_name%/*}/$date_time-$exten.opus
 
@@ -33,9 +34,10 @@ if (( $(awk -v dur="$duration" 'BEGIN {print (dur <= 1)}') )); then
     exit 0
 fi
 
-caption="Voice record $caption_postfix"
-email_caption="$caption from: ${exten}"
+caption="Voice $caption_postfix record"
+email_caption="$caption from: ${exten} to: ${callee_number} at: ${date_time}"
 email_description="From: ${exten}
+To: ${callee_number}
 Date: ${date_time}
 Duration: ${duration}"
 tg_description="$caption
