@@ -136,6 +136,8 @@ service asterisk restart
 setup_firewall
 ./save-iptables.sh
 
+./setup_kotlin_env.sh
+./cron_update.sh
 setUpCertBot "victor.sipme.com.au"
 
 echo "Installation complete"
