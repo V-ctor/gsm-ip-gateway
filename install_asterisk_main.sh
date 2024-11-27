@@ -127,6 +127,15 @@ function setUpCertBot() {
   fi
 }
 
+function installPjsipEndpointsChecker() {
+  CRON_SCRIPT_PATH=/opt/asterisk
+  mkdir "$CRON_SCRIPT_PATH"
+  cp CheckEndpointState.main.kts $CRON_SCRIPT_PATH
+  cp Notifier.main.kts $CRON_SCRIPT_PATH
+  cp ParseConfig.kts $CRON_SCRIPT_PATH
+  cp state.yaml /tmp/
+}
+
 echo "Installing standalone Asterisk server"
 install_dependencies
 install_opus
@@ -137,6 +146,7 @@ setup_firewall
 ./save-iptables.sh
 
 ./setup_kotlin_env.sh
+installPjsipEndpointsChecker
 ./cron_update.sh
 setUpCertBot "victor.sipme.com.au"
 

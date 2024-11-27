@@ -1,18 +1,25 @@
 #!/usr/bin/env kotlin
+/*
+Use param log_level=<Level> for setting logging severity: trace, debug, info, error. Info is by default.
+
+List of checking endpoints must be stored in /tmp/state.yaml like this
+asterisk.endpoint:
+- {name: cloud, registered: true}
+- {name: 201, registered: false}
+ */
 
 @file:DependsOn("org.yaml:snakeyaml:2.0")
 @file:Import("./Notifier.main.kts")
 
-import java.io.File
 import org.slf4j.LoggerFactory
+import org.yaml.snakeyaml.Yaml
+import java.io.File
 
-
-val ENDPOINT = "cloud" // Name of the PJSIP endpoint to check
 val STATE_FILE = "/tmp/state.yaml" // Path to the state YAML file
 val ASTERISK_COMMAND = "/usr/sbin/asterisk -rx" // Asterisk CLI command path
 
-System.setProperty("org.slf4j.simpleLogger.showDateTime","true")
-System.setProperty("org.slf4j.simpleLogger.dateTimeFormat","yyyy.MM.dd HH:mm:ss")
+System.setProperty("org.slf4j.simpleLogger.showDateTime", "true")
+System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "yyyy.MM.dd HH:mm:ss")
 
 val logLevel = args.firstOrNull { it.contains("log_level") }?.split("=")?.get(1) ?: "info"
 
@@ -20,94 +27,66 @@ System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel)
 
 val logger = LoggerFactory.getLogger("check_endpoint_state")
 
-fun executeCommand(command: String): String {
+// YAML loader and dumper setup
+private val yaml: Yaml = Yaml()
 
+fun executeCommand(command: String): String {
     logger.debug("Executing command: bash -c \"$command\"")
-    val process = ProcessBuilder("bash", "-c", command)
+    return ProcessBuilder("bash", "-c", command)
         .redirectErrorStream(true)
         .start()
-
-    val output = process.inputStream.bufferedReader().readText().trim()
-    logger.debug(output)
-    return output
+        .inputStream.bufferedReader().readText().trim()
+        .also { logger.debug(it) }
 }
 
-fun parseRegistrationStatus(output: String): Boolean {
-    // Match Contact lines with actual registration data
-    val contactRegex = Regex("""Contact:\s+.+@.+""")
-    return contactRegex.containsMatchIn(output)
+fun isEndpointRegistered(endpoint: String): Boolean {
+    val output = executeCommand("$ASTERISK_COMMAND \"pjsip show aor $endpoint\"")
+    logger.debug("Command output for endpoint $endpoint: $output")
+    return output.lines().any { it.contains("Contact:") && !it.contains("<Aor/ContactUri") }
 }
 
-
-fun readYaml(filePath: String): Map<String, Any> {
-    val yaml = org.yaml.snakeyaml.Yaml()
-    if (!File(filePath).exists()) return emptyMap() // Return empty map if file doesn't exist
-    File(filePath).inputStream().use { input ->
-        return yaml.load(input) as? Map<String, Any> ?: emptyMap()
+// Function to read and parse YAML state file
+fun loadState(): MutableMap<String, Any> {
+    val file = File(STATE_FILE)
+    if (!file.exists()) {
+        file.writeText(yaml.dump(mapOf("asterisk" to mapOf("endpoints" to emptyList<Map<String, Any>>()))))
     }
+    return yaml.load(file.readText()) ?: mutableMapOf()
 }
 
-fun writeYaml(filePath: String, data: Map<String, Any>) {
-    val yaml = org.yaml.snakeyaml.Yaml()
-    File(filePath).outputStream().use { output ->
-        yaml.dump(data, output.writer())
-    }
+// Function to save state back to YAML
+fun saveState(state: Map<String, Any>) {
+    File(STATE_FILE).writeText(yaml.dump(state))
 }
 
-fun checkAndUpdateState(endpoint: String, stateFile: String, botToken: String, chatId: String) {
-    val command = "$ASTERISK_COMMAND \"pjsip show aor $endpoint\""
-    val output = executeCommand(command)
+// Function to check and update states
+fun checkAndUpdateStates() {
+    val state = loadState()
+    logger.debug(state.toString())
 
-    val isRegistered = parseRegistrationStatus(output)
+    val endpoints = state["asterisk.endpoint"] as? List<MutableMap<String, Any>> ?: return
+    logger.debug(endpoints.toString())
 
-    // Load current state from YAML file
-    val currentState = readYaml(stateFile).toMutableMap()
-    val endpoints = (currentState["asterisk.endpoint"] as? List<MutableMap<String, Any>>)?.toMutableList() ?: mutableListOf()
+    for (endpoint in endpoints) {
+        logger.debug(endpoint.toString())
+        val name = endpoint["name"].let { (it as? String) ?: (it as? Int)?.toString() } ?: continue
+        logger.debug(name)
+        val wasRegistered = endpoint["registered"] as? Boolean ?: false
+        val isRegistered = isEndpointRegistered(name)
 
-    var endpointFound = false
-    var stateChanged = false
+        if (wasRegistered != isRegistered) {
+            endpoint["registered"] = isRegistered
+            val status = if (isRegistered) "registered" else "unregistered"
+            logger.info("Endpoint $name status changed to $status")
 
-    // Process each endpoint
-    for (ep in endpoints) {
-        if (ep["name"] == endpoint) {
-            endpointFound = true
-            val previousState = ep["registered"] as? Boolean ?: false
-
-            if (previousState != isRegistered) {
-                logger.info("State change detected for endpoint $endpoint:")
-                logger.info("Previous state: registered=$previousState, New state: registered=$isRegistered")
-                ep["registered"] = isRegistered
-                stateChanged = true
-
-                // Send Telegram notification
-                val message = if (isRegistered) {
-                    "Endpoint $endpoint is now registered."
-                } else {
-                    "Endpoint $endpoint is now unregistered."
-                }
-                sendTelegramMessage(botToken, chatId, message, logger)
-            }
+            // Send a notification if the state changes
+            sendTelegramMessage("Endpoint $name is now $status.", logger)
+        } else {
+            logger.info("Endpoint $name status unchanged (registered=$isRegistered)")
         }
     }
 
-    // If endpoint wasn't found, add it to the state
-    if (!endpointFound) {
-        logger.info("Endpoint $endpoint not found in state file, adding it.")
-        endpoints.add(mutableMapOf("name" to endpoint, "registered" to isRegistered))
-        stateChanged = true
-    }
-
-    // Update the state file if there was a change
-    if (stateChanged) {
-        logger.info("Updating state file with new state for endpoint $endpoint.")
-        currentState["asterisk.endpoint"] = endpoints
-        writeYaml(stateFile, currentState)
-    } else {
-        logger.debug("No state changes detected for endpoint $endpoint.")
-    }
-
-    logger.info("Current state of endpoint $endpoint: registered=$isRegistered")
+    saveState(state)
 }
 
-// Main script logic
-checkAndUpdateState(ENDPOINT, STATE_FILE, BOT_TOKEN, CHAT_ID)
+checkAndUpdateStates()
